@@ -83,7 +83,7 @@ void GameScene::Update() {
 	}
 
 	viewProjection_.translation_.x = player_->GetX();
-	viewProjection_.translation_.y = player_->GetY();
+	//viewProjection_.translation_.y = player_->GetY();
 
 	viewProjection_.UpdateMatrix();
 }

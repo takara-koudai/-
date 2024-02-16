@@ -44,8 +44,25 @@ void Player::Update() {
 		ClearFlag = true;
 	}
 
+	// ブロックとの判定
+	float x2 = worldTransform_.translation_.x + 0.5f;
+	float y2 = worldTransform_.translation_.y;
+	
+	float x3 = worldTransform_.translation_.x - 0.1f;
+	float y3 = worldTransform_.translation_.y;
+
+	if (map_->CheckStage(x2, y2) == false) {
+
+		worldTransform_.translation_.x += 0.5f;
+	}
+
+	if (map_->CheckStage(x3, y3) == false) {
+
+		worldTransform_.translation_.x -= 0.5f;
+	}
+
 	// ゲームパッド状態取得
-	if (Input::GetInstance()->GetJoystickState(0, joyState)) 
+	if (Input::GetInstance()->GetJoystickState(0, joyState))
 	{
 		const float kspeed = 0.2f;
 		const float i = 0.0f;
@@ -59,96 +76,60 @@ void Player::Update() {
 		move = Normalize(move);
 		move = Multiply3(kspeed, move);
 
-		
-		//ブロックとの判定
-		float x = worldTransform_.translation_.x + 0.5f;
-		float y = worldTransform_.translation_.y;
-
-		if (map_->CheckStage(x, y) == false) {
-
-			worldTransform_.translation_.x += 0.5f;
-		}
-
-		float x2 = worldTransform_.translation_.x - 0.1f;
-		float y2 = worldTransform_.translation_.y;
-
-		if (map_->CheckStage(x2, y2) == false) {
-
-			worldTransform_.translation_.x -= 0.5f;
-		}
-
 		// 移動
 		worldTransform_.translation_ = Add(worldTransform_.translation_, move);
+		
+	}
 
+	// ジャンプ
+	if (joyState.Gamepad.wButtons == XINPUT_GAMEPAD_A && jumpFlag == false) {
+		jumpFlag = true;
+		jumpSpeed = 1.5;
 
+		if (ItemFlag == true) {
+			jumpSpeed += 1.0;
+		}
+	}
+	if (jumpFlag == true) {
+		jumpSpeed -= (0.1f + worldTransform_.translation_.y / 1000);
 
-		//ジャンプ
-		if (joyState.Gamepad.wButtons == XINPUT_GAMEPAD_A && jumpFlag == false)
-		{
-			jumpFlag = true;
-			jumpSpeed = 1.5;
+		if (jumpSpeed > 0) {
+			for (float i = 0; i < jumpSpeed; i += 0.1f) {
+				float x = worldTransform_.translation_.x;
+				float y = worldTransform_.translation_.y + 0.1f;
 
-			if (ItemFlag == true) 
-			{
-				jumpSpeed += 1.0;
+				if (map_->CheckStage(x, y) == false) {
+					worldTransform_.translation_.y += 0.1f;
+				} else {
+					jumpSpeed = -0.1;
+					break;
+				}
+			}
+		} else {
+			for (float i = jumpSpeed; i < 0; i += 0.1f) {
+				float x = worldTransform_.translation_.x;
+				float y = worldTransform_.translation_.y - 0.04f;
+
+				if (map_->CheckStage(x, y) == false) {
+					worldTransform_.translation_.y -= 0.04f;
+				} else {
+					jumpSpeed = 0;
+					jumpFlag = false;
+				}
 			}
 		}
-		if (jumpFlag == true)
-		{
-			jumpSpeed -= (0.1f + worldTransform_.translation_.y / 1000);
+	} else {
+		for (float i = jumpSpeed; i < 0; i += 0.1f) {
+			float x = worldTransform_.translation_.x;
+			float y = worldTransform_.translation_.y - 0.1f;
 
-			if (jumpSpeed > 0)
-			{
-				for (float i = 0; i < jumpSpeed; i += 0.1f)
-				{
-					float x = worldTransform_.translation_.x;
-					float y = worldTransform_.translation_.y + 0.1f;
-
-					if (map_->CheckStage(x, y) == false)
-					{
-						worldTransform_.translation_.y += 0.1f;
-					} 
-					else 
-					{
-						jumpSpeed = -0.1;
-						break;
-					}
-				}
-			} 
-			else 
-			{
-				for (float i = jumpSpeed; i < 0; i += 0.1f)
-				{
-					float x = worldTransform_.translation_.x;
-					float y = worldTransform_.translation_.y - 0.04f;
-
-					if (map_->CheckStage(x, y) == false)
-					{
-						worldTransform_.translation_.y -= 0.04f;
-					} 
-					else 
-					{
-						jumpSpeed = 0;
-						jumpFlag = false;
-					}
-				}
-			}
-		} 
-		else 
-		{
-			for (float i = jumpSpeed; i < 0; i += 0.1f)
-			{
-				float x = worldTransform_.translation_.x;
-				float y = worldTransform_.translation_.y - 0.1f;
-
-				if (map_->CheckStage(x, y) == false)
-				{
-					jumpFlag = false;
-					jumpSpeed = 0;
-				} 
+			if (map_->CheckStage(x, y) == false) {
+				jumpFlag = false;
+				jumpSpeed = 0;
 			}
 		}
 	}
+
 
 	/*if (input_->PushKey(DIK_D)) {
 		// move.x = kClientVeloctiy;
