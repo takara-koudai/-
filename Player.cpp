@@ -1,5 +1,6 @@
 ﻿#include "ImGuiManager.h"
 #include <player.h>
+#include <cassert>
 
 Player::~Player() {}
 
