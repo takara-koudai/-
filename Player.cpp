@@ -44,7 +44,6 @@ void Player::Update() {
 		ClearFlag = true;
 	}
 
-
 	// ゲームパッド状態取得
 	if (Input::GetInstance()->GetJoystickState(0, joyState)) 
 	{
